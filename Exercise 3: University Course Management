@@ -1,0 +1,69 @@
+-- Students table
+CREATE TABLE students (
+    student_id INT PRIMARY KEY,
+    first_name VARCHAR(50),
+    last_name VARCHAR(50),
+    enrollment_date DATE
+);
+
+-- Courses table
+CREATE TABLE courses (
+    course_id INT PRIMARY KEY,
+    course_name VARCHAR(100),
+    professor_id INT,
+    FOREIGN KEY (professor_id) REFERENCES professors(professor_id)
+);
+
+-- Enrollments table
+CREATE TABLE enrollments (
+    enrollment_id INT PRIMARY KEY,
+    student_id INT,
+    course_id INT,
+    grade VARCHAR(5),
+    FOREIGN KEY (student_id) REFERENCES students(student_id),
+    FOREIGN KEY (course_id) REFERENCES courses(course_id)
+);
+
+-- Professors table
+CREATE TABLE professors (
+    professor_id INT PRIMARY KEY,
+    first_name VARCHAR(50),
+    last_name VARCHAR(50),
+    department VARCHAR(100)
+);
+
+
+- Write a query to find the total number of students enrolled in each course.
+
+SELECT c.course_id, c.course_name, COUNT(e.student_id) AS total_students_enrolled
+FROM courses c
+LEFT JOIN enrollments e ON c.course_id = e.course_id
+GROUP BY c.course_id, c.course_name
+ORDER BY total_students_enrolled DESC;
+
+- Write a query to list the courses taught by professors in the &#39;Computer Science&#39; department.
+
+SELECT c.course_id, c.course_name, p.first_name, p.last_name
+FROM courses c
+JOIN professors p ON c.professor_id = p.professor_id
+WHERE p.department = 'Computer Science';
+
+- Write a query to calculate the average grade for each course.
+
+SELECT c.course_id, c.course_name, AVG(CASE WHEN e.grade = 'A' THEN 4.0
+                                           WHEN e.grade = 'B' THEN 3.0
+                                           WHEN e.grade = 'C' THEN 2.0
+                                           WHEN e.grade = 'D' THEN 1.0
+                                           ELSE 0.0 END) AS average_grade
+FROM courses c
+LEFT JOIN enrollments e ON c.course_id = e.course_id
+GROUP BY c.course_id, c.course_name;
+
+- Write a query to find students who are enrolled in more than three courses.
+
+SELECT s.student_id, s.first_name, s.last_name, COUNT(e.course_id) AS courses_enrolled
+FROM students s
+JOIN enrollments e ON s.student_id = e.student_id
+GROUP BY s.student_id, s.first_name, s.last_name
+HAVING COUNT(e.course_id) > 3
+ORDER BY courses_enrolled DESC;
