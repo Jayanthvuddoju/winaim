@@ -1,0 +1,56 @@
+1.Database Schema Design:
+
+-- Employees table
+CREATE TABLE employees (
+    employee_id INT PRIMARY KEY,
+    first_name VARCHAR(50),
+    last_name VARCHAR(50),
+    department_id INT,
+    hire_date DATE,
+    FOREIGN KEY (department_id) REFERENCES departments(department_id)
+);
+
+-- Departments table
+CREATE TABLE departments (
+    department_id INT PRIMARY KEY,
+    department_name VARCHAR(100)
+);
+
+-- Salaries table
+CREATE TABLE salaries (
+    employee_id INT,
+    salary DECIMAL(10, 2),
+    from_date DATE,
+    to_date DATE,
+    PRIMARY KEY (employee_id, from_date),
+    FOREIGN KEY (employee_id) REFERENCES employees(employee_id)
+);
+
+2.SQL Queries:
+
+--Find all employees hired in the last year:
+
+SELECT *
+FROM employees
+WHERE hire_date >= DATE_SUB(CURRENT_DATE(), INTERVAL 1 YEAR);
+
+--Calculate total salary expenditure for each department:
+
+SELECT d.department_name, SUM(s.salary) AS total_salary_expenditure
+FROM departments d
+JOIN employees e ON d.department_id = e.department_id
+JOIN salaries s ON e.employee_id = s.employee_id
+GROUP BY d.department_name;
+
+--Find the top 5 highest-paid employees along with their department names:
+
+SELECT e.first_name, e.last_name, d.department_name, s.salary
+FROM employees e
+JOIN departments d ON e.department_id = d.department_id
+JOIN (
+    SELECT employee_id, salary
+    FROM salaries
+    WHERE to_date IS NULL  -- Assuming current salaries have NULL in to_date
+    ORDER BY salary DESC
+    LIMIT 5
+) s ON e.employee_id = s.employee_id;
